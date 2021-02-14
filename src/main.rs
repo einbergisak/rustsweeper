@@ -1,10 +1,13 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
+mod tests;
+
 const GAME_COLS: usize = 16;
 const GAME_ROWS: usize = 16;
 
 
+#[derive(Copy, Clone, PartialEq, Debug)]
 struct Coordinate {
     x: usize,
     y: usize,
@@ -25,6 +28,7 @@ impl Coordinate {
     }
 }
 
+#[derive(Copy, Clone)]
 struct Tile {
     is_revealed: bool,
     is_a_mine: bool,
@@ -61,7 +65,7 @@ impl GameContainer {
             'inner: loop {
                 seed.hash(&mut hasher);
                 hash = hasher.finish();
-                if (23 * hash + 7) % 53 == 0 && !tile_array[x_index][y_index].is_a_mine {
+                if (hash.overflowing_mul(23).0 + 7) % 53 == 0 && !tile_array[x_index][y_index].is_a_mine {
                     tile_array[x_index][y_index].is_a_mine = true;
                     current_number_of_mines += 1;
                     if current_number_of_mines == number_of_mines {
@@ -76,7 +80,7 @@ impl GameContainer {
             }
             x_index += 1;
             if x_index == GAME_COLS {
-                x_index == 0;
+                x_index = 0;
             }
         }
 
@@ -94,19 +98,25 @@ impl GameContainer {
         }
     }
 
+    fn reveal_tile_at(&mut self, coordinate: Coordinate) {
+        let mut tile = self.tile_array[coordinate.x][coordinate.y];
+        self.reveal_tile(&mut tile);
+    }
+
     // When the players wants to reveal a tile
-    fn reveal_tile(&mut self, coordinate: Coordinate) {
-        let mut tile = &mut self.tile_array[coordinate.x][coordinate.y];
+    fn reveal_tile(&mut self, mut tile: &mut Tile) {
         if !tile.is_revealed {
             if tile.is_a_mine {
-                self.lose(&tile);
-            } else {
+                // self.lose(&tile);
+                return;
+            }else{
                 self.reveal_nearby(&mut tile)
             }
         }
+        
     }
 
-    // Reveals tiles around the argument tile if it is empty (no bomb nor number)
+    // Recursively reveals tiles around the argument tile if it is empty (no bomb nor number)
     fn reveal_nearby(&mut self, mut tile: &mut Tile) {
         if !tile.is_revealed {
             match tile.number {
@@ -116,12 +126,12 @@ impl GameContainer {
                     for xd in -1..=1 {
                         for yd in -1..=1 {
                             // Makes sure that it doesn't go outside of the tile_array index bounds
-                            match (tile.coordinates.x + xd, tile.coordinates.y + yd) {
-                                (x, y) if x < 0 || x >= GAME_COLS || y < 0 || y > GAME_ROWS => {}
-                                (x, y) => {
-                                    self.reveal_nearby(&mut self.tile_array[x][y])
-                                }
+                            let (x, y) = (tile.coordinates.x as isize + xd, tile.coordinates.y as isize + yd);
+                            if !(x < 0 || x >= GAME_COLS as isize || y < 0 || y > GAME_ROWS as isize) {
+                                let mut tile = self.tile_array[x as usize][y as usize];
+                                self.reveal_nearby(&mut tile);
                             }
+                            
                         }
                     }
                 }
