@@ -3,7 +3,7 @@
 
 #[cfg(test)]
 mod tests{
-    use crate::{Coordinate, GameContainer, main};
+    use crate::{Coordinate, GameContainer};
 
 
     #[test]
