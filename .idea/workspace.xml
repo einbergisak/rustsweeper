@@ -5,8 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="59bb689c-f8e6-4dbd-94df-6990667ed71a" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/game_container.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tile.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/game_container.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/game_container.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -16,6 +19,7 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="Class" />
         <option value="Rust File" />
       </list>
     </option>
@@ -35,6 +39,9 @@
   <component name="MacroExpansionManager">
     <option name="directoryName" value="lknhw1y4" />
   </component>
+  <component name="ProblemsViewState">
+    <option name="selectedIndex" value="1" />
+  </component>
   <component name="ProjectId" id="1oU6KssD5i4kiq2j2hbkXEr3RPv" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -48,7 +55,7 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$/.." />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
-    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="settings.editor.selected.configurable" value="terminal" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -57,7 +64,7 @@
       <recent name="C:\Users\Isak\IdeaProjects\minesweeper\src" />
     </key>
   </component>
-  <component name="RunManager" selected="Cargo.Test tests::tests::array_coordinates_are_properly_set">
+  <component name="RunManager" selected="Cargo.Run">
     <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
       <option name="arquillianRunConfiguration">
         <value>
@@ -153,6 +160,8 @@
       <workItem from="1613328874673" duration="9589000" />
       <workItem from="1613338491310" duration="49000" />
       <workItem from="1613390147431" duration="10959000" />
+      <workItem from="1613419859592" duration="4801000" />
+      <workItem from="1613424784022" duration="303000" />
     </task>
     <servers />
   </component>
@@ -174,5 +183,9 @@
   <component name="VcsManagerConfiguration">
     <option name="LOCAL_CHANGES_DETAILS_PREVIEW_SHOWN" value="false" />
     <MESSAGE value="Adds seeded tile array initialization" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

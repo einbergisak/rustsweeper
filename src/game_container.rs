@@ -1,10 +1,11 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
-use crate::{Tile, Coordinate};
+use crate::tile::{Tile, Coordinate};
+use std::env::remove_var;
 
 
-const GAME_COLS: usize = 16;
-const GAME_ROWS: usize = 16;
+pub const GAME_COLS: usize = 16;
+pub const GAME_ROWS: usize = 16;
 const NUM_GAME_MINES: usize = 40;
 
 type TileArray = [[Tile; GAME_ROWS]; GAME_COLS];
@@ -13,7 +14,7 @@ pub(crate) struct GameContainer {
     pub(crate) tile_array: TileArray
 }
 impl GameContainer {
-    pub(crate) fn new(seed: String) -> GameContainer {
+    pub(crate) fn new(seed: &str) -> GameContainer {
         let mut hasher = DefaultHasher::default();
         let mut tile_array = [[Tile::new(Coordinate::default()); GAME_ROWS]; GAME_COLS];
         let mut hash;
@@ -56,9 +57,13 @@ impl GameContainer {
                     .enumerate()
                     .for_each(|(y, tile)|{
                         tile.coordinates = Coordinate::new(x, y); // Set tile coordinates
-                        gc.set_tile_number(tile); // Set tile number (the amount of nearby mines)
                     }
                     ));
+        for x in 0..GAME_COLS{
+            for y in 0..GAME_ROWS{
+                GameContainer::set_tile_number(&mut tile_array, &Coordinate{x, y}); // Set tile number (the amount of nearby mines)
+            }
+        }
 
         gc.tile_array = tile_array;
         gc
@@ -67,63 +72,69 @@ impl GameContainer {
     }
 
     // Calls "reveal_tile" using coordinates instead of tile references
-    pub(crate) fn reveal_tile_at(&mut self, coordinate: Coordinate) {
-        let mut tile = self.tile_array[coordinate.x][coordinate.y];
-        self.reveal_tile(&mut tile);
-    }
+    // pub(crate) fn reveal_tile_at(&mut self, coordinate: Coordinate) {
+    //     let mut tile = self.tile_array[coordinate.x][coordinate.y];
+    //     self.reveal_tile(&mut tile);
+    // }
 
     // When the players wants to reveal a tile
-    pub(crate) fn reveal_tile(&mut self, mut tile: &mut Tile) {
+    pub(crate) fn reveal_tile_at(&mut self, coordinate: &Coordinate) {
+        let tile = &self.tile_array[coordinate.x][coordinate.y];
+
+        println!("Reveal tile: {:?}", tile);
         if !tile.is_revealed {
             if tile.is_a_mine {
                 // self.lose(&tile);
                 return;
             }else{
-                // Recursively reveals tiles around the argument tile if it is empty (no bomb nor number)
-                fn reveal_nearby (this: &mut GameContainer, mut tile: &mut Tile){
-                    if !tile.is_revealed{
-                        match tile.number {
-                            None if tile.is_a_mine => { return; }
-                            None => {
-                                tile.is_revealed = true;
-                                this.map_this_and_surrounding_tiles(&mut tile, reveal_nearby);
-                            }
-                            Some(_) => {
-                                tile.is_revealed = true;
-                            }
-                        }
-                    }
-                }
-                reveal_nearby(self, tile);
+                GameContainer::reveal_nearby(&mut self.tile_array, coordinate);
             }
         }
 
     }
 
-
-    // Sets the number of each non-mine tile
-    fn set_tile_number(&mut self, mut tile: &mut Tile){
-        if !tile.is_a_mine{
-            let mut acc: u8 = 0; // +1 for each mine surrounding the argument tile
-            let add_if_mine = |_: &mut Self, nearby_tile: &mut Tile|
-                if nearby_tile.is_a_mine{
-                    acc += 1;
-                };
-            self.map_this_and_surrounding_tiles(&mut tile, add_if_mine);
-
-            tile.number = Some(acc);
+    // Recursively reveals tiles around the argument tile if it is empty (no bomb nor number)
+    fn reveal_nearby (mut tile_array: &mut TileArray, coordinate: &Coordinate){
+        let mut tile: &mut Tile = &mut tile_array[coordinate.x][coordinate.y];
+        if !tile.is_revealed{
+            match tile.number {
+                None if tile.is_a_mine => { return; }
+                None => {
+                    tile.is_revealed = true;
+                    GameContainer::map_tile_and_surrounding(&mut tile_array, coordinate, GameContainer::reveal_nearby);
+                }
+                Some(_) => {
+                    tile.is_revealed = true;
+                }
+            }
         }
     }
 
-    fn map_this_and_surrounding_tiles<T>(&mut self, tile: &mut Tile, mut func: T)
-        where T: FnMut(&mut Self, &mut Tile){
+
+    // Sets the number of each non-mine tile
+    fn set_tile_number(mut tile_array: &mut TileArray, coordinate: &Coordinate){
+        if !tile_array[coordinate.x][coordinate.y].is_a_mine{
+            let mut acc: u8 = 0; // +1 for each mine surrounding the argument tile
+            let add_if_mine = |tile_array: &mut TileArray, coordinate: &Coordinate|
+                if tile_array[coordinate.x][coordinate.y].is_a_mine{
+                    acc += 1;
+                };
+            GameContainer::map_tile_and_surrounding(&mut tile_array, coordinate, add_if_mine);
+            let mut tile: &mut Tile = &mut tile_array[coordinate.x][coordinate.y];
+            if acc != 0{
+                tile.number = Some(acc);
+            }
+        }
+    }
+
+    fn map_tile_and_surrounding<T>(mut tile_array: &mut TileArray, coordinate: &Coordinate, mut func: T)
+        where T: FnMut(&mut TileArray, &Coordinate){
         for xd in -1..=1 {
             for yd in -1..=1 {
                 // Makes sure that it doesn't go outside of the tile_array index bounds
-                let (x, y) = (tile.coordinates.x as isize + xd, tile.coordinates.y as isize + yd);
+                let (x, y) = (coordinate.x as isize + xd, coordinate.y as isize + yd);
                 if x >= 0 && x < GAME_COLS as isize && y > 0 && y < GAME_ROWS as isize {
-                    let mut tile = self.tile_array[x as usize][y as usize];
-                    func(self, &mut tile)
+                    func(&mut tile_array, &Coordinate{x: x as usize, y: y as usize})
                 }
 
             }
