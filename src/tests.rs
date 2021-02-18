@@ -10,7 +10,7 @@ mod tests{
     #[test]
     fn array_coordinates_are_properly_set(){
         // Arrange
-        let g = GameContainer::new("asd".to_string());
+        let g = GameContainer::new("asd");
         let t = g.tile_array;
         assert_eq!(t[0][0].coordinates, Coordinate::new(0, 0));
         assert_eq!(t[5][2].coordinates, Coordinate::new(5, 2));
