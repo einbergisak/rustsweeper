@@ -154,6 +154,8 @@ impl GameContainer {
     }
 
     fn check_if_win(&self){
-
+        if self.tiles_revealed == GAME_COLS*GAME_ROWS - NUM_GAME_MINES{
+            println!("You won!")
+        }
     }
 }
