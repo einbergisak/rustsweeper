@@ -4,10 +4,8 @@
     <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="59bb689c-f8e6-4dbd-94df-6990667ed71a" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
-    </list>
+    <list default="true" id="59bb689c-f8e6-4dbd-94df-6990667ed71a" name="Default Changelist" comment="" />
+    <list id="2d80c6c1-8f7e-4b19-9b42-15dc68ce38c9" name="Revert &quot;Implements variable game size, Piston import&quot;" comment="Revert &quot;Implements variable game size, Piston import&quot;&#10;&#10;This reverts commit ec1f4834" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -22,8 +20,13 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-    <option name="RESET_MODE" value="HARD" />
+    <option name="RESET_MODE" value="SOFT" />
   </component>
   <component name="GitSEFilterConfiguration">
     <file-type-list>
@@ -149,6 +152,7 @@
       <workItem from="1613419859592" duration="4801000" />
       <workItem from="1613424784022" duration="854000" />
       <workItem from="1613498856680" duration="143000" />
+      <workItem from="1614030673600" duration="322000" />
     </task>
     <servers />
   </component>
