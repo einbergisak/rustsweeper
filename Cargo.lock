@@ -778,13 +778,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "minesweeper"
-version = "0.1.0"
-dependencies = [
- "piston_window",
-]
-
-[[package]]
 name = "miniz_oxide"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1311,6 +1304,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94341e4e44e24f6b591b59e47a8a027df12e008d73fd5672dbea9cc22f4507d9"
 dependencies = [
  "bitflags",
+]
+
+[[package]]
+name = "rustsweeper"
+version = "0.1.0"
+dependencies = [
+ "piston_window",
 ]
 
 [[package]]
