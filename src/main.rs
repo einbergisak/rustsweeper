@@ -10,18 +10,7 @@ mod tests;
 use piston_window::*;
 
 fn main() {
-    // let mut start_window: PistonWindow = WindowSettings::new("Enter game settings.", [200,400]).exit_on_esc(true).build().unwrap();
-
-    // if Confirm::new()
-    //     .with_prompt("Do you want to play the game with the default 16x16 settings?")
-    //     .interact()
-    //     .expect("Prompt error")
-    // {
-    //     cols = 16;
-    //     rows = 16;
-    //     mines = 40;
-    // } else {
-    let (mut cols, mut rows, mut mines, mut seed): (usize, usize, usize, String);
+    let (cols, rows, mines, seed): (usize, usize, usize, String);
     loop {
         let randseed = rand::random::<u32>();
         let input = dialoguer::Input::new()
@@ -36,21 +25,20 @@ fn main() {
         let mut iter = input.split_whitespace();
         match (iter.next(), iter.next(), iter.next(), iter.next()) {
             (Some(w), Some(h), Some(m), Some(s)) => {
-                match (w.parse::<usize>(), h.parse::<usize>(), m.parse::<usize>()) {
-                    (Ok(c), Ok(r), Ok(m)) => {
+                match (
+                    w.parse::<usize>(),
+                    h.parse::<usize>(),
+                    m.parse::<usize>(),
+                    String::from_str(&s),
+                ) {
+                    (Ok(c), Ok(r), Ok(m), Ok(s)) => {
                         cols = c;
                         rows = r;
                         mines = m;
-                        match String::from_str(&s) {
-                            Ok(s) => seed = s,
-                            Err(_) => {
-                                println!("\nFaulty seed input. Please make sure that it is written exclusively with alphanumeric characters.");
-                                continue;
-                            }
-                        }
+                        seed = s;
                         break;
                     }
-                    (_, _, _) => {
+                    (_, _, _, _) => {
                         println!("\nFaulty input. Please make sure that you enter width, height and mines as numbers.");
                         continue;
                     }
