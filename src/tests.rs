@@ -1,11 +1,4 @@
-
-
-
 #[cfg(test)]
-mod tests{
-    use crate::game::{GameContainer, Coordinate};
-
-
-   
-
+mod tests {
+    use crate::game::{Coordinate, GameContainer};
 }
