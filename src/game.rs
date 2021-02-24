@@ -1,4 +1,3 @@
-use std::env::remove_var;
 use std::hash::{Hash, Hasher};
 use std::{collections::hash_map::DefaultHasher, process::exit};
 
@@ -85,17 +84,6 @@ impl GameContainer {
                 x_index = 0;
             }
         }
-
-        // // For each tile
-        // tile_array.iter_mut()
-        //     .enumerate()
-        //     .for_each(|(x, vec)|
-        //         vec.iter_mut()
-        //             .enumerate()
-        //             .for_each(|(y, tile)|{
-        //                 tile.coordinates = Coordinate::new(x, y); // Set tile coordinates
-        //             }
-        //             ));
 
         let mut gc = GameContainer {
             tile_array,
