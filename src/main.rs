@@ -8,13 +8,15 @@ mod event_handler;
 mod game;
 
 use ggez::{
-    event::{self, winit_event::ElementState, EventHandler},
-    input::mouse,
+    conf::WindowMode,
+    event,
+    graphics::{self, Rect},
 };
 use rand::{distributions::Alphanumeric, Rng};
 
 const MAX_ROWS: usize = 75;
 const MAX_COLS: usize = 135;
+const DEFAULT_TILE_SIZE: f32 = 40.0;
 
 fn main() {
     let (game_cols, game_rows, game_mines, game_seed): (usize, usize, usize, String);
@@ -119,40 +121,37 @@ fn main() {
         }
     }
 
-    let mut cb = ggez::ContextBuilder::new("game_name", "author_name");
+    let scaled_tile_size =
+        f32::min(DEFAULT_TILE_SIZE, 1800.0 / game_cols as f32).min(1000.0 / game_rows as f32);
+    let mut cb = ggez::ContextBuilder::new("Rustsweeper", "Isak Einberg").window_mode(
+        WindowMode::default()
+            .dimensions(
+                game_cols as f32 * scaled_tile_size,
+                game_rows as f32 * scaled_tile_size,
+            )
+            .resizable(false),
+    );
 
     if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
         let mut path = std::path::PathBuf::from(manifest_dir);
         path.push("resources");
         cb = cb.add_resource_path(path);
+    } else {
+        panic!("Could not retrieve resource directory.")
     }
 
     let (mut ctx, mut event_loop) = cb.build().unwrap();
 
+    // TODO! Set window icon
+    graphics::set_window_title(&mut ctx, "Rustsweeper");
+
     let mut game = GameContainer::new(&mut ctx, game_rows, game_cols, game_mines, game_seed);
     println!("Game initialized successfully.");
 
-    while ctx.continuing {
-        event_loop.poll_events(|event| {
-            ctx.process_event(&event);
-            match event {
-                ggez::event::winit_event::Event::WindowEvent { event, .. } => match event {
-                    ggez::event::winit_event::WindowEvent::CloseRequested => event::quit(&mut ctx),
-                    ggez::event::winit_event::WindowEvent::MouseInput { state, button, .. } => {
-                        let (x, y) = (mouse::position(&mut ctx).x, mouse::position(&mut ctx).y);
-                        match state {
-                            ElementState::Pressed => {
-                                game.mouse_button_down_event(&mut ctx, button, x, y)
-                            }
-                            ElementState::Released => {
-                                game.mouse_button_up_event(&mut ctx, button, x, y)
-                            }
-                        }
-                    }
-                    _ => {}
-                },
-                _ => {}
-            }
-        })
+    match event::run(&mut ctx, &mut event_loop, &mut game) {
+        Ok(_) => {
+            println!("Game exited cleanly.");
+        }
+        Err(e) => println!("Error occured: {}", e),
     }
 }

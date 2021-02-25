@@ -66,6 +66,7 @@ pub(crate) struct GameContainer {
 }
 impl GameContainer {
     /// Creates a new game with the provided settings and seed.
+    // TODO: Första rutan man klickar på och de runtomkring kan inte vara minor.
     pub(crate) fn new(
         mut ctx: &mut Context,
         game_rows: usize,
@@ -103,7 +104,7 @@ impl GameContainer {
                 x_index = 0;
             }
         }
-        let img = Image::new(&mut ctx, "/spritesheet.bmp").expect("Image loading error");
+        let img = Image::new(&mut ctx, "/spritesheet.png").expect("Image loading error");
         let mut gc = GameContainer {
             tile_array,
             tiles_revealed: 0,

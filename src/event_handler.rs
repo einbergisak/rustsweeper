@@ -1,30 +1,38 @@
-use ggez::nalgebra::Vector2;
 use ggez::{
     event::EventHandler,
     graphics::{self, Color, DrawParam, Rect},
     nalgebra::Point2,
 };
+use ggez::{
+    graphics::{DrawMode, FillOptions},
+    nalgebra::Vector2,
+};
 
-use crate::game::GameContainer;
-const DEFAULT_TILE_SIZE: f32 = 40.0;
+use crate::{game::GameContainer, DEFAULT_TILE_SIZE};
 
 impl EventHandler for GameContainer {
     fn mouse_button_down_event(
         &mut self,
         _ctx: &mut ggez::Context,
-        _button: ggez::event::MouseButton,
-        _x: f32,
-        _y: f32,
+        button: ggez::event::MouseButton,
+        x: f32,
+        y: f32,
     ) {
-    }
-
-    fn mouse_button_up_event(
-        &mut self,
-        _ctx: &mut ggez::Context,
-        _button: ggez::event::MouseButton,
-        _x: f32,
-        _y: f32,
-    ) {
+        match button {
+            ggez::event::MouseButton::Left => {
+                // Reveal
+                todo!()
+            }
+            ggez::event::MouseButton::Right => {
+                // Flag!
+                todo!()
+            }
+            ggez::event::MouseButton::Middle => {
+                // Chord implementation!
+                todo!()
+            }
+            _ => {}
+        }
     }
 
     fn update(&mut self, _ctx: &mut ggez::Context) -> ggez::GameResult {
@@ -32,7 +40,7 @@ impl EventHandler for GameContainer {
     }
 
     fn draw(&mut self, ctx: &mut ggez::Context) -> ggez::GameResult {
-        graphics::clear(ctx, Color::from_rgb(50, 50, 50));
+        graphics::clear(ctx, Color::from_rgb(250, 0, 0));
 
         // Scales the size of the tiles depending on game settings, this in order to make sure that the game fits on the screen.
         let scaled_tile_size = f32::min(DEFAULT_TILE_SIZE, 1800.0 / self.game_cols as f32)
@@ -64,7 +72,7 @@ impl EventHandler for GameContainer {
                     }
                 };
 
-                dp_vec.push(
+                sprite_batch.add(
                     DrawParam::new()
                         .src(src)
                         .scale(Vector2::new(
@@ -78,13 +86,20 @@ impl EventHandler for GameContainer {
                 );
             }
         }
-        for dp in dp_vec {
-            sprite_batch.add(dp);
-        }
 
-        graphics::draw(ctx, &sprite_batch, (Point2::<f32>::new(0.0, 0.0),))
+        graphics::draw(ctx, &sprite_batch, DrawParam::default())
             .expect("Something went wrong rendering the game.");
+        // let a = ggez::graphics::Mesh::new_circle(
+        //     ctx,
+        //     DrawMode::Fill(FillOptions::default()),
+        //     Point2::new(10.0, 10.0),
+        //     5.0,
+        //     1.0,
+        //     graphics::WHITE,
+        // )
+        // .unwrap();
 
+        // todo std::thread::yield_now();
         graphics::present(ctx)
     }
 }
