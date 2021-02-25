@@ -1,8 +1,17 @@
+use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
-use std::{collections::hash_map::DefaultHasher, process::exit};
 
+use ggez::{
+    graphics::{spritebatch::SpriteBatch, Image},
+    Context,
+};
+
+/// 2-Dimensional vector of tiles.
+/// The outer vector is a vector of the game columns.
+/// Tiles at coordinates (x, y) can be accessed via `TileArray[x][y]`
 type TileArray = Vec<Vec<Tile>>;
 
+/// Game coordinate
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub(crate) struct Coordinate {
     x: usize,
@@ -10,43 +19,55 @@ pub(crate) struct Coordinate {
 }
 
 impl Coordinate {
+    /// Creates a new coordinate with the input x- and y values.
     pub(crate) fn new(x: usize, y: usize) -> Coordinate {
         Coordinate { x, y }
     }
+    /// Default coordinate with both the x- and y value set to 0.
     pub(crate) fn default() -> Coordinate {
         Coordinate { x: 0, y: 0 }
     }
 }
 
+/// Game tile
 #[derive(Copy, Clone, Debug)]
 pub(crate) struct Tile {
-    is_revealed: bool,
+    pub(crate) is_revealed: bool,
     is_a_mine: bool,
-    number: Option<u8>,
+    pub(crate) is_flagged: bool,
+    pub(crate) number: Option<u8>,
 }
 impl Default for Tile {
+    /// Creates a new, uninitialized tile with no 'active values'
     fn default() -> Self {
         Tile {
             is_revealed: false,
             is_a_mine: false,
+            is_flagged: false,
             number: None,
         }
     }
 }
 
 impl Tile {
-    fn reveal(&mut self) {}
+    fn reveal(&mut self) {
+        todo!()
+    }
 }
 
+/// Contains the data relevant to the game
 pub(crate) struct GameContainer {
     tile_array: TileArray,
     tiles_revealed: usize,
-    game_rows: usize,
-    game_cols: usize,
+    pub(crate) game_rows: usize,
+    pub(crate) game_cols: usize,
     game_mines: usize,
+    pub(crate) sprite_batch: SpriteBatch,
 }
 impl GameContainer {
+    /// Creates a new game with the provided settings and seed.
     pub(crate) fn new(
+        mut ctx: &mut Context,
         game_rows: usize,
         game_cols: usize,
         game_mines: usize,
@@ -57,8 +78,6 @@ impl GameContainer {
         let mut hash;
         let mut current_number_of_mines: usize = 0;
         let (mut x_index, mut y_index) = (0, 0);
-
-        // Initializes the tile array
 
         // Uses the MAD-hashing technique to distribute the mines on the game field.
         'outer: loop {
@@ -84,13 +103,14 @@ impl GameContainer {
                 x_index = 0;
             }
         }
-
+        let img = Image::new(&mut ctx, "/spritesheet.bmp").expect("Image loading error");
         let mut gc = GameContainer {
             tile_array,
             tiles_revealed: 0,
             game_rows,
             game_cols,
             game_mines,
+            sprite_batch: SpriteBatch::new(img),
         };
         for x in 0..game_cols {
             for y in 0..game_rows {
@@ -101,16 +121,9 @@ impl GameContainer {
         gc
     }
 
-    // Calls "reveal_tile" using coordinates instead of tile references
-    // pub(crate) fn reveal_tile_at(&mut self, coordinate: Coordinate) {
-    //     let mut tile = self.tile_array[coordinate.x][coordinate.y];
-    //     self.reveal_tile(&mut tile);
-    // }
-
-    // When the players wants to reveal a tile
+    /// Reveals the tile at the given coordinates.
     pub(crate) fn reveal_tile_at(&mut self, coordinate: &Coordinate) {
         let tile = &self.tile_array[coordinate.x][coordinate.y];
-        // println!("Reveal tile: {:?}", tile);
         if !tile.is_revealed {
             if tile.is_a_mine {
                 self.lose(&tile);
@@ -122,10 +135,9 @@ impl GameContainer {
         }
     }
 
-    // Recursively reveals tiles around the argument tile if it is empty (is_a_mine == False && number == None)
+    /// Recursively reveals tiles around the argument tile if it is empty `(is_a_mine == False && number == None)`
     fn reveal_nearby(&mut self, coordinate: &Coordinate) {
         let mut tile: &mut Tile = &mut self.tile_array[coordinate.x][coordinate.y];
-        println!("tile = {:?}", tile);
         if !tile.is_revealed {
             match tile.number {
                 None if tile.is_a_mine => {
@@ -143,7 +155,7 @@ impl GameContainer {
         }
     }
 
-    // Sets the number of each non-mine tile
+    /// Sets the number for each non-mine tile
     fn set_tile_number(&mut self, coordinate: &Coordinate) {
         if !self.tile_array[coordinate.x][coordinate.y].is_a_mine {
             let mut acc: u8 = 0; // +1 for each mine surrounding the argument tile
@@ -160,6 +172,7 @@ impl GameContainer {
         }
     }
 
+    /// A higher-order function that applies the given function to the given tile and all of the tiles surrounding it.
     fn map_tile_and_surrounding<T>(&mut self, coordinate: &Coordinate, mut func: T)
     where
         T: FnMut(&mut Self, &Coordinate),
@@ -182,13 +195,12 @@ impl GameContainer {
     }
 
     fn lose(&self, tile: &Tile) {
-        println!("Nope, that's a bomb! You lost the game!");
-        exit(0);
+        todo!()
     }
 
     fn check_if_win(&self) {
         if self.tiles_revealed == self.game_cols * self.game_rows - self.game_mines {
-            println!("You won!")
+            todo!()
         }
     }
 

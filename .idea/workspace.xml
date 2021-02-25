@@ -5,7 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="59bb689c-f8e6-4dbd-94df-6990667ed71a" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
     </list>
     <list id="2d80c6c1-8f7e-4b19-9b42-15dc68ce38c9" name="Revert &quot;Implements variable game size, Piston import&quot;" comment="Revert &quot;Implements variable game size, Piston import&quot;&#10;&#10;This reverts commit ec1f4834" />
     <option name="SHOW_DIALOG" value="false" />
@@ -64,16 +66,17 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
+    <property name="go.import.settings.migrated" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/.." />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
-    <property name="settings.editor.selected.configurable" value="terminal" />
+    <property name="settings.editor.selected.configurable" value="preferences.general" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\Isak\Documents\kodskit" />
-      <recent name="C:\Users\Isak\IdeaProjects\minesweeper\tests" />
-      <recent name="C:\Users\Isak\IdeaProjects\minesweeper\src" />
+      <recent name="C:\Users\Isak\IdeaProjects\rustsweeper\tests" />
+      <recent name="C:\Users\Isak\IdeaProjects\rustsweeper\src" />
     </key>
   </component>
   <component name="RunManager" selected="Cargo.Run">
@@ -89,7 +92,7 @@
       </method>
     </configuration>
     <configuration name="Run" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
-      <option name="command" value="run --package minesweeper --bin minesweeper" />
+      <option name="command" value="run --package rustsweeper --bin rustsweeper" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="channel" value="DEFAULT" />
       <option name="requiredFeatures" value="true" />
@@ -104,7 +107,7 @@
       </method>
     </configuration>
     <configuration name="Test ::tests" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package minesweeper --test tests &quot;&quot;" />
+      <option name="command" value="test --package rustsweeper --test tests &quot;&quot;" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="channel" value="DEFAULT" />
       <option name="requiredFeatures" value="true" />
@@ -119,7 +122,7 @@
       </method>
     </configuration>
     <configuration name="Test main::tests" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package minesweeper --bin minesweeper tests" />
+      <option name="command" value="test --package rustsweeper --bin rustsweeper tests" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="channel" value="DEFAULT" />
       <option name="requiredFeatures" value="true" />
@@ -134,7 +137,7 @@
       </method>
     </configuration>
     <configuration name="Test tests::tests::array_coordinates_are_properly_set" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package minesweeper --bin minesweeper tests::tests::array_coordinates_are_properly_set -- --exact" />
+      <option name="command" value="test --package rustsweeper --bin rustsweeper tests::tests::array_coordinates_are_properly_set -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="channel" value="DEFAULT" />
       <option name="requiredFeatures" value="true" />
@@ -176,6 +179,7 @@
       <workItem from="1613424784022" duration="854000" />
       <workItem from="1613498856680" duration="143000" />
       <workItem from="1614030673600" duration="743000" />
+      <workItem from="1614183433246" duration="1370000" />
     </task>
     <servers />
   </component>

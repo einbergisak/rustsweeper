@@ -2,13 +2,15 @@ use std::process::exit;
 
 use crate::game::GameContainer;
 extern crate dialoguer;
-extern crate piston_window;
 extern crate rand;
 
+mod event_handler;
 mod game;
-mod tests;
 
-use piston_window::*;
+use ggez::{
+    event::{self, winit_event::ElementState, EventHandler},
+    input::mouse,
+};
 use rand::{distributions::Alphanumeric, Rng};
 
 const MAX_ROWS: usize = 75;
@@ -75,13 +77,13 @@ fn main() {
                                             game_mines = mines;
                                             break 'inner;
                                         }
-                                        (_, _, _) => {
+                                        _ => {
                                             println!("\nFaulty input. Please make sure that you enter width, height and mines as integers.");
                                             continue 'inner;
                                         }
                                     }
                                 }
-                                (_, _, _) => {
+                                _ => {
                                     println!("\nFaulty input format. Please try again.");
                                     continue 'inner;
                                 }
@@ -117,37 +119,40 @@ fn main() {
         }
     }
 
-    let mut game = GameContainer::new(game_rows, game_cols, game_mines, game_seed);
-    let tile_size = f64::min(40.0, 1800.0 / game_cols as f64).min(1000.0 / game_rows as f64);
+    let mut cb = ggez::ContextBuilder::new("game_name", "author_name");
+
+    if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
+        let mut path = std::path::PathBuf::from(manifest_dir);
+        path.push("resources");
+        cb = cb.add_resource_path(path);
+    }
+
+    let (mut ctx, mut event_loop) = cb.build().unwrap();
+
+    let mut game = GameContainer::new(&mut ctx, game_rows, game_cols, game_mines, game_seed);
     println!("Game initialized successfully.");
 
-    let mut window: PistonWindow = WindowSettings::new(
-        "Rustsweeper",
-        [game_cols as f64 * tile_size, game_rows as f64 * tile_size],
-    )
-    .exit_on_esc(true)
-    .build()
-    .unwrap();
-
-    while let Some(event) = window.next() {
-        window.draw_2d(&event, |context, graphics, _device| {
-            clear([0.2; 4], graphics);
-            for n in 0..game_rows {
-                rectangle(
-                    [1.0, 0.0, 0.0, n as f32 / game_rows as f32],
-                    [0.0, n as f64 * tile_size, tile_size, tile_size],
-                    context.transform,
-                    graphics,
-                );
+    while ctx.continuing {
+        event_loop.poll_events(|event| {
+            ctx.process_event(&event);
+            match event {
+                ggez::event::winit_event::Event::WindowEvent { event, .. } => match event {
+                    ggez::event::winit_event::WindowEvent::CloseRequested => event::quit(&mut ctx),
+                    ggez::event::winit_event::WindowEvent::MouseInput { state, button, .. } => {
+                        let (x, y) = (mouse::position(&mut ctx).x, mouse::position(&mut ctx).y);
+                        match state {
+                            ElementState::Pressed => {
+                                game.mouse_button_down_event(&mut ctx, button, x, y)
+                            }
+                            ElementState::Released => {
+                                game.mouse_button_up_event(&mut ctx, button, x, y)
+                            }
+                        }
+                    }
+                    _ => {}
+                },
+                _ => {}
             }
-            for n in 0..game_cols {
-                rectangle(
-                    [1.0, 0.0, n as f32 / game_cols as f32, 1.0],
-                    [n as f64 * tile_size, 0.0, tile_size, tile_size],
-                    context.transform,
-                    graphics,
-                );
-            }
-        });
+        })
     }
 }
