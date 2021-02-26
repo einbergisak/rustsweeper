@@ -104,7 +104,7 @@ impl GameContainer {
     /// Reveals the tile at the given coordinates.
     pub(crate) fn reveal_tile_at(&mut self, (tile_x, tile_y): (usize, usize)) {
         let tile = &self.tile_array[tile_x][tile_y];
-        if !tile.is_revealed {
+        if !tile.is_revealed && !tile.is_flagged{
             if tile.is_a_mine {
                 self.lose(&tile);
                 return;
@@ -124,7 +124,18 @@ impl GameContainer {
     }
 
     pub(crate) fn chord_at(&mut self, (tile_x, tile_y): (usize, usize)) {
-        todo!()
+        let tile = self.tile_array[tile_x][tile_y];
+        if tile.is_revealed && tile.number.is_some(){
+            let mut acc: u8 = 0;
+            self.map_tile_and_surrounding((tile_x, tile_y), |sself: &mut Self,  (x, y): (usize, usize)|{
+                if sself.tile_array[x][y].is_flagged{acc += 1;}
+            });
+            if tile.number == Some(acc){
+                self.map_tile_and_surrounding((tile_x, tile_y), |sself: &mut Self, (x, y): (usize, usize)|{
+                    sself.reveal_tile_at((x, y))
+                });
+            }
+        }
     }
 
     /// Recursively reveals tiles around the argument tile if it is empty `(is_a_mine == False && number == None)`
