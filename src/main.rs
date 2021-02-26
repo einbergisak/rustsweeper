@@ -134,8 +134,11 @@ fn main() {
         }
     }
 
-    let scaled_tile_size =
-        f32::min(DEFAULT_TILE_SIZE, 1800.0 / game_cols as f32).min(1000.0 / game_rows as f32);
+    // Scales the size of the tiles depending on game settings, this in order to make sure that the game fits on the screen.
+    let scaled_tile_size = f32::min(DEFAULT_TILE_SIZE, 1800.0 / game_cols as f32)
+        .min(1000.0 / game_rows as f32)
+        .floor();
+
     let mut cb = ggez::ContextBuilder::new("Rustsweeper", "Isak Einberg").window_mode(
         WindowMode::default()
             .dimensions(
@@ -158,7 +161,14 @@ fn main() {
     // TODO! Set window icon
     graphics::set_window_title(&mut ctx, "Rustsweeper");
 
-    let mut game = GameContainer::new(&mut ctx, game_rows, game_cols, game_mines, game_seed);
+    let mut game = GameContainer::new(
+        &mut ctx,
+        game_rows,
+        game_cols,
+        game_mines,
+        game_seed,
+        scaled_tile_size,
+    );
     println!("Game initialized successfully.");
 
     match event::run(&mut ctx, &mut event_loop, &mut game) {
