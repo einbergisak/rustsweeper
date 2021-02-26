@@ -1,11 +1,8 @@
+use ggez::nalgebra::Vector2;
 use ggez::{
     event::EventHandler,
     graphics::{self, Color, DrawParam, Rect},
     nalgebra::Point2,
-};
-use ggez::{
-    graphics::{DrawMode, FillOptions},
-    nalgebra::Vector2,
 };
 
 use crate::{game::GameContainer, DEFAULT_TILE_SIZE, SPRITESHEET_WIDTH};
