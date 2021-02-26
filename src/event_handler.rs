@@ -8,7 +8,9 @@ use ggez::{
     nalgebra::Vector2,
 };
 
-use crate::{game::GameContainer, DEFAULT_TILE_SIZE};
+use crate::{game::GameContainer, DEFAULT_TILE_SIZE, SPRITESHEET_WIDTH};
+
+const TILE_IMAGE_FRACTION: f32 = DEFAULT_TILE_SIZE / SPRITESHEET_WIDTH;
 
 impl EventHandler for GameContainer {
     fn mouse_button_down_event(
@@ -40,35 +42,28 @@ impl EventHandler for GameContainer {
     }
 
     fn draw(&mut self, ctx: &mut ggez::Context) -> ggez::GameResult {
-        graphics::clear(ctx, Color::from_rgb(250, 0, 0));
+        graphics::clear(ctx, Color::from_rgb(0, 0, 0));
 
         // Scales the size of the tiles depending on game settings, this in order to make sure that the game fits on the screen.
         let scaled_tile_size = f32::min(DEFAULT_TILE_SIZE, 1800.0 / self.game_cols as f32)
             .min(1000.0 / self.game_rows as f32);
         let mut sprite_batch = self.sprite_batch.clone();
-        let mut dp_vec: Vec<DrawParam> = Vec::new();
         for (x, vec) in self.get_tiles().into_iter().enumerate() {
             for (y, tile) in vec.into_iter().enumerate() {
                 // Sets the "source" of the image for each tile, which is a part of the /resources/spritesheet.bmp image which is loaded into the sprite batch.
                 let src = if tile.is_flagged {
-                    Rect::new(
-                        2.0 * DEFAULT_TILE_SIZE,
-                        0.0,
-                        DEFAULT_TILE_SIZE,
-                        DEFAULT_TILE_SIZE,
-                    )
+                    Rect::new(2.0 * TILE_IMAGE_FRACTION, 0.0, TILE_IMAGE_FRACTION, 1.0)
                 } else {
                     match (tile.is_revealed, tile.number) {
-                        (false, _) => {
-                            Rect::new(DEFAULT_TILE_SIZE, 0.0, DEFAULT_TILE_SIZE, DEFAULT_TILE_SIZE)
-                        }
+                        (false, _) => Rect::new(TILE_IMAGE_FRACTION, 0.0, TILE_IMAGE_FRACTION, 1.0),
+
                         (true, Some(number)) => Rect::new(
-                            DEFAULT_TILE_SIZE * (2.0 + number as f32),
+                            TILE_IMAGE_FRACTION * (2.0 + number as f32),
                             0.0,
-                            DEFAULT_TILE_SIZE,
-                            DEFAULT_TILE_SIZE,
+                            TILE_IMAGE_FRACTION,
+                            1.0,
                         ),
-                        (true, None) => Rect::new(0.0, 0.0, DEFAULT_TILE_SIZE, DEFAULT_TILE_SIZE),
+                        (true, None) => Rect::new(0.0, 0.0, TILE_IMAGE_FRACTION, 1.0),
                     }
                 };
 
@@ -87,7 +82,7 @@ impl EventHandler for GameContainer {
             }
         }
 
-        graphics::draw(ctx, &sprite_batch, DrawParam::default())
+        graphics::draw(ctx, &sprite_batch, (Point2::<f32>::new(0.0, 0.0),))
             .expect("Something went wrong rendering the game.");
         // let a = ggez::graphics::Mesh::new_circle(
         //     ctx,

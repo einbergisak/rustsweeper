@@ -173,7 +173,7 @@ impl GameContainer {
         }
     }
 
-    /// A higher-order function that applies the given function to the given tile and all of the tiles surrounding it.
+    /// A higher-order function that applies the given function to the given tile and to all of the tiles surrounding it.
     fn map_tile_and_surrounding<T>(&mut self, coordinate: &Coordinate, mut func: T)
     where
         T: FnMut(&mut Self, &Coordinate),

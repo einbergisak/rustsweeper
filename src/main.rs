@@ -14,16 +14,19 @@ use ggez::{
 };
 use rand::{distributions::Alphanumeric, Rng};
 
-const MAX_ROWS: usize = 75;
-const MAX_COLS: usize = 135;
+const MAX_ROWS: usize = 50;
+const MAX_COLS: usize = 100;
 const DEFAULT_TILE_SIZE: f32 = 40.0;
+const SPRITESHEET_WIDTH: f32 = 440.0;
 
 fn main() {
     let (game_cols, game_rows, game_mines, game_seed): (usize, usize, usize, String);
     let default_settings = [
-        "Beginner (9x9)",
-        "Intermediate (16x16)",
-        "Expert (30x16)",
+        "Beginner [9x9] (81 tiles & 10 mines)",
+        "Intermediate [16x16] (256 tiles & 40 mines)",
+        "Expert [30x16] (480 tiles & 99 mines)",
+        "Master [60x32] (1920 tiles & 400 mines)",
+        "Legend [100x50] (5000 tiles & 1250 mines)",
         "Custom",
     ];
 
@@ -52,13 +55,23 @@ fn main() {
                             game_rows = 16;
                             game_mines = 99;
                         }
-                        3 => 'inner: loop {
+                        3 => {
+                            game_cols = 60;
+                            game_rows = 32;
+                            game_mines = 450;
+                        }
+                        4 => {
+                            game_cols = 100;
+                            game_rows = 50;
+                            game_mines = 1250;
+                        }
+                        5 => 'inner: loop {
                             let input: String = dialoguer::Input::new()
                         .with_prompt(
                             format!("\nPlease enter preferred game settings in the format 'columns rows mines' (max {}x{})", MAX_COLS, MAX_ROWS,
                         ))
                         .interact()
-                        .unwrap();
+                        .unwrap(); // TODO: Om man lämnar "mines" tomt så får man ett standardantal med minor
                             let mut iter = input.split_whitespace();
                             match (iter.next(), iter.next(), iter.next()) {
                                 (Some(cols), Some(rows), Some(mines)) => {
