@@ -21,6 +21,9 @@ impl EventHandler for GameContainer {
         let tile_y = (y / self.scaled_tile_size).floor() as usize;
         match button {
             ggez::event::MouseButton::Left => {
+                if self.tiles_revealed == 0 {
+                    self.distribute_mines(Some((tile_x, tile_y)), None)
+                } 
                 // Reveal
                 self.reveal_tile_at((tile_x, tile_y));
             }

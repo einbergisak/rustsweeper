@@ -10,7 +10,7 @@ mod game;
 use ggez::{
     conf::WindowMode,
     event,
-    graphics::{self, Rect},
+    graphics::{self},
 };
 use rand::{distributions::Alphanumeric, Rng};
 
@@ -20,15 +20,24 @@ const DEFAULT_TILE_SIZE: f32 = 40.0;
 const SPRITESHEET_WIDTH: f32 = 440.0;
 
 fn main() {
-    let (game_cols, game_rows, game_mines, game_seed): (usize, usize, usize, String);
+    let (game_cols, game_rows, game_mines): (usize, usize, usize);
+    let game_seed: Option<String>;
     let default_settings = [
         "Beginner [9x9] (81 tiles & 10 mines)",
         "Intermediate [16x16] (256 tiles & 40 mines)",
         "Expert [30x16] (480 tiles & 99 mines)",
         "Master [60x32] (1920 tiles & 400 mines)",
         "Legend [100x50] (5000 tiles & 1250 mines)",
-        "Custom",
+        "Custom [seeded generation]",
     ];
+    let random_seed = format!(
+        "{}",
+        rand::thread_rng()
+            .sample_iter(Alphanumeric)
+            .take(20)
+            .map(char::from)
+            .collect::<String>()
+    );
 
     'outer: loop {
         match dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
@@ -90,7 +99,13 @@ fn main() {
                                             game_cols = cols;
                                             game_rows = rows;
                                             game_mines = mines;
-                                            break 'inner;
+                                            game_seed = Some(dialoguer::Input::new()
+                                                .with_prompt("\nPlease enter preferred game seed (press Enter for random)",)
+                                                .default(random_seed)
+                                                .show_default(false)
+                                                .interact()
+                                                .unwrap());
+                                            break 'outer;
                                         }
                                         _ => {
                                             println!("\nFaulty input. Please make sure that you enter width, height and mines as integers.");
@@ -111,15 +126,7 @@ fn main() {
                             continue 'outer;
                         }
                     }
-                    game_seed = dialoguer::Input::new()
-                        .with_prompt(
-                            "\nPlease enter preferred game seed (press Enter for random)",
-                        )
-                        .default(format!("{}", rand::thread_rng().sample_iter(Alphanumeric).take(20).map(char::from).collect::<String>()))
-                        .show_default(false)
-                        .interact()
-                        .unwrap();
-
+                    game_seed = None;
                     break 'outer;
                 } else {
                     exit(0);
@@ -153,7 +160,7 @@ fn main() {
         path.push("resources");
         cb = cb.add_resource_path(path);
     } else {
-        panic!("Could not retrieve resource directory.")
+        panic!("Could not find resource directory.")
     }
 
     let (mut ctx, mut event_loop) = cb.build().unwrap();

@@ -5,6 +5,7 @@ use ggez::{
     graphics::{spritebatch::SpriteBatch, Image},
     Context,
 };
+use rand::random;
 
 /// 2-Dimensional vector of tiles.
 /// The outer vector is a vector of the game columns.
@@ -34,7 +35,7 @@ impl Default for Tile {
 /// Contains the data relevant to the game
 pub(crate) struct GameContainer {
     pub(crate) tile_array: Box<TileArray>,
-    tiles_revealed: usize,
+    pub(crate) tiles_revealed: usize,
     pub(crate) game_rows: usize,
     pub(crate) game_cols: usize,
     game_mines: usize,
@@ -43,45 +44,17 @@ pub(crate) struct GameContainer {
 }
 impl GameContainer {
     /// Creates a new game with the provided settings and seed.
-    // TODO: Första rutan man klickar på och de runtomkring kan inte vara minor.
     pub(crate) fn new(
         mut ctx: &mut Context,
         game_rows: usize,
         game_cols: usize,
         game_mines: usize,
-        seed: String,
+        seed: Option<String>,
         scaled_tile_size: f32,
     ) -> GameContainer {
-        let mut hasher = DefaultHasher::default();
-        let mut tile_array: Box<TileArray> = Box::new(vec![vec![Tile::default(); game_rows]; game_cols]);
-        let mut hash;
-        let mut current_number_of_mines: usize = 0;
-        let (mut x_index, mut y_index) = (0, 0);
+        let tile_array: Box<TileArray> =
+            Box::new(vec![vec![Tile::default(); game_rows]; game_cols]);
 
-        // Uses the MAD-hashing technique to distribute the mines on the game field.
-        'outer: loop {
-            'inner: loop {
-                seed.hash(&mut hasher);
-                hash = hasher.finish();
-                let mut tile = &mut tile_array[x_index][y_index];
-                if (hash.overflowing_mul(23).0 + 7) % 53 == 0 && !tile.is_a_mine {
-                    tile.is_a_mine = true;
-                    current_number_of_mines += 1;
-                    if current_number_of_mines == game_mines {
-                        break 'outer;
-                    }
-                }
-                y_index += 1;
-                if y_index == game_rows {
-                    y_index = 0;
-                    break 'inner;
-                }
-            }
-            x_index += 1;
-            if x_index == game_cols {
-                x_index = 0;
-            }
-        }
         let img = Image::new(&mut ctx, "/spritesheet.png").expect("Image loading error");
         let mut gc = GameContainer {
             tile_array,
@@ -92,21 +65,89 @@ impl GameContainer {
             sprite_batch: SpriteBatch::new(img),
             scaled_tile_size,
         };
-        for x in 0..game_cols {
-            for y in 0..game_rows {
-                gc.set_tile_number((x, y)); // Set tile number (the amount of nearby mines)
-            }
+
+        if seed.is_some() {
+            gc.distribute_mines(None, seed);
         }
 
         gc
     }
 
+    /// Distributes the mines randomly or according to the game seed (depending on if "seed" is Some(String) or None).
+    ///
+    /// Leaves the upper-left corner free from mines and reveals some tiles,
+    /// because otherwise seeded gameplay would be impossible (since you'd be able to click on a mine on the initial click).
+    pub(crate) fn distribute_mines(
+        &mut self,
+        tile_coords: Option<(usize, usize)>,
+        seed: Option<String>,
+    ) {
+        let (clicked_tile_x, clicked_tile_y) = if let Some(tuple) = tile_coords {
+            tuple
+        } else {
+            (0, 0)
+        };
+
+        let mut hasher = DefaultHasher::default();
+        let mut token: u64;
+        let mut current_number_of_mines: usize = 0;
+        let (mut x_index, mut y_index) = (0, 0);
+
+        // Uses the MAD-hashing technique to distribute the mines on the game field.
+        'outer: loop {
+            'inner: loop {
+                let mut tile = &mut self.tile_array[x_index][y_index];
+                if let Some(ref s) = seed {
+                    s.hash(&mut hasher);
+                    token = hasher.finish();
+                } else {
+                    token = random::<u64>();
+                }
+
+                if (token.overflowing_mul(23).0 + 7) % 53 == 0
+                    && !tile.is_a_mine
+                    && ((seed.is_some() && x_index > 2 && y_index > 2)
+                        || (seed.is_none()
+                            && (x_index.overflowing_sub(clicked_tile_x).0) > 1
+                            && (y_index.overflowing_sub(clicked_tile_y).0) > 1))
+                {
+                    tile.is_a_mine = true;
+                    current_number_of_mines += 1;
+                    if current_number_of_mines == self.game_mines {
+                        break 'outer;
+                    }
+                }
+                y_index += 1;
+                if y_index == self.game_rows {
+                    y_index = 0;
+                    break 'inner;
+                }
+            }
+            x_index += 1;
+            if x_index == self.game_cols {
+                x_index = 0;
+            }
+        }
+
+        // Sets the number for each tile (the amount of mines surrounding the tile)
+        for x in 0..self.game_cols {
+            for y in 0..self.game_rows {
+                self.set_tile_number((x, y));
+            }
+        }
+
+        // Reveals the upper left corner if playing a seeded game.
+        if seed.is_some() {
+            self.reveal_tile_at((0, 0));
+        }
+    }
+
     /// Reveals the tile at the given coordinates.
     pub(crate) fn reveal_tile_at(&mut self, (tile_x, tile_y): (usize, usize)) {
         let tile = &self.tile_array[tile_x][tile_y];
-        if !tile.is_revealed && !tile.is_flagged{
+        if !tile.is_revealed && !tile.is_flagged {
             if tile.is_a_mine {
-                self.lose(&tile);
+                self._lose(&tile);
                 return;
             } else {
                 self.reveal_nearby((tile_x, tile_y));
@@ -117,7 +158,7 @@ impl GameContainer {
 
     /// Toggles if the tile is flagged or not
     pub(crate) fn toggle_flag_at(&mut self, (tile_x, tile_y): (usize, usize)) {
-        if !self.tile_array[tile_x][tile_y].is_revealed{
+        if !self.tile_array[tile_x][tile_y].is_revealed {
             // Toggles with bitwise XOR
             self.tile_array[tile_x][tile_y].is_flagged ^= true;
         }
@@ -125,15 +166,21 @@ impl GameContainer {
 
     pub(crate) fn chord_at(&mut self, (tile_x, tile_y): (usize, usize)) {
         let tile = self.tile_array[tile_x][tile_y];
-        if tile.is_revealed && tile.number.is_some(){
+        if tile.is_revealed && tile.number.is_some() {
             let mut acc: u8 = 0;
-            self.map_tile_and_surrounding((tile_x, tile_y), |sself: &mut Self,  (x, y): (usize, usize)|{
-                if sself.tile_array[x][y].is_flagged{acc += 1;}
-            });
-            if tile.number == Some(acc){
-                self.map_tile_and_surrounding((tile_x, tile_y), |sself: &mut Self, (x, y): (usize, usize)|{
-                    sself.reveal_tile_at((x, y))
-                });
+            self.map_tile_and_surrounding(
+                (tile_x, tile_y),
+                |sself: &mut Self, (x, y): (usize, usize)| {
+                    if sself.tile_array[x][y].is_flagged {
+                        acc += 1;
+                    }
+                },
+            );
+            if tile.number == Some(acc) {
+                self.map_tile_and_surrounding(
+                    (tile_x, tile_y),
+                    |sself: &mut Self, (x, y): (usize, usize)| sself.reveal_tile_at((x, y)),
+                );
             }
         }
     }
@@ -183,15 +230,15 @@ impl GameContainer {
         for xd in -1..=1 {
             for yd in -1..=1 {
                 // Makes sure that it doesn't go outside of the tile_array index bounds
-                let (x, y) = (tile_x as isize + xd, tile_y as isize + yd);
-                if x >= 0 && x < self.game_cols as isize && y >= 0 && y < self.game_rows as isize {
+                let (x, y) = (tile_x as i16 + xd, tile_y as i16 + yd);
+                if x >= 0 && x < self.game_cols as i16 && y >= 0 && y < self.game_rows as i16 {
                     func(self, (x as usize, y as usize))
                 }
             }
         }
     }
 
-    fn lose(&self, tile: &Tile) {
+    fn _lose(&self, clicked_tile: &Tile) {
         todo!()
     }
 
