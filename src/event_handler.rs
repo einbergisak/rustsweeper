@@ -1,7 +1,7 @@
 use ggez::{event, nalgebra::Vector2};
 use ggez::{
     event::EventHandler,
-    graphics::{self, Color, DrawParam, Rect},
+    graphics::{self, DrawParam, Rect},
     input::mouse,
     nalgebra::Point2,
 };

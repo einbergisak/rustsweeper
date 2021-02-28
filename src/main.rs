@@ -13,9 +13,8 @@ use ggez::{
     graphics::{self},
 };
 use rand::{distributions::Alphanumeric, Rng};
+use colored::*;
 
-const MAX_ROWS: usize = 50;
-const MAX_COLS: usize = 100;
 const DEFAULT_TILE_SIZE: f32 = 40.0;
 const SPRITESHEET_WIDTH: f32 = 440.0;
 
@@ -23,23 +22,16 @@ fn main() {
     let (game_cols, game_rows, game_mines): (usize, usize, usize);
     let game_seed: Option<String>;
     let default_settings = [
-        "Beginner [9x9] (81 tiles & 10 mines)",
-        "Intermediate [16x16] (256 tiles & 40 mines)",
-        "Expert [30x16] (480 tiles & 99 mines)",
-        "Master [60x32] (1920 tiles & 400 mines)",
-        "Legend [100x50] (5000 tiles & 1250 mines)",
-        "Custom [seeded generation]",
+        "Novice [9x9] (81 tiles, 12% mines)".color(Color::TrueColor{ r: 20, g: 220, b: 0}),
+        "Versed [16x16] (256 tiles, 16% mines)".color(Color::TrueColor{ r: 147, g: 230, b: 0}),
+        "Expert [30x16] (480 tiles, 21% mines)".color(Color::TrueColor{ r: 212, g: 230, b: 0}),
+        "Master [40x24] (960 tiles, 26% mines)".color(Color::TrueColor{ r: 255, g: 200, b: 0}),
+        "Savant [60x35] (2160 tiles, 32% mines)".color(Color::TrueColor{ r: 255, g: 148, b: 0}),
+        "Legend [82x44] (3608 tiles, 37% mines)".color(Color::TrueColor{ r: 255, g: 88, b: 0}),
+        "Unreal [120x50] (6000 tiles, 42% mines)".color(Color::TrueColor{ r: 174, g: 0, b: 0}),
     ];
-    let random_seed = format!(
-        "{}",
-        rand::thread_rng()
-            .sample_iter(Alphanumeric)
-            .take(20)
-            .map(char::from)
-            .collect::<String>()
-    );
 
-    'outer: loop {
+    loop {
         match dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
             .items(&default_settings)
             .default(0)
@@ -48,86 +40,92 @@ fn main() {
         {
             Ok(option) => {
                 if let Some(alt) = option {
-                    match alt {
+                    let (cols, rows, mines) = match alt {
                         0 => {
-                            game_cols = 9;
-                            game_rows = 9;
-                            game_mines = 10;
+                            (9, 9, 10)
                         }
                         1 => {
-                            game_cols = 16;
-                            game_rows = 16;
-                            game_mines = 40;
+                            (16, 16, 40)
                         }
                         2 => {
-                            game_cols = 30;
-                            game_rows = 16;
-                            game_mines = 99;
+                            (30, 16, 99)
                         }
                         3 => {
-                            game_cols = 60;
-                            game_rows = 32;
-                            game_mines = 450;
+                            (40, 24, 250)
                         }
                         4 => {
-                            game_cols = 100;
-                            game_rows = 50;
-                            game_mines = 1250;
+                            (60, 35, 691)
                         }
-                        5 => 'inner: loop {
-                            let input: String = dialoguer::Input::new()
-                        .with_prompt(
-                            format!("\nPlease enter preferred game settings in the format 'columns rows mines' (max {}x{})", MAX_COLS, MAX_ROWS,
-                        ))
-                        .interact()
-                        .unwrap(); // TODO: Om man lämnar "mines" tomt så får man ett standardantal med minor
-                            let mut iter = input.split_whitespace();
-                            match (iter.next(), iter.next(), iter.next()) {
-                                (Some(cols), Some(rows), Some(mines)) => {
-                                    match (
-                                        cols.parse::<usize>(),
-                                        rows.parse::<usize>(),
-                                        mines.parse::<usize>(),
-                                    ) {
-                                        (Ok(cols), Ok(rows), Ok(mines)) => {
-                                            if rows > MAX_ROWS || cols > MAX_COLS {
-                                                println!("\nFaulty input. The game size cannot exceed {} columns (width) or {} rows (height). Please enter another game size.", MAX_COLS, MAX_ROWS);
-                                                continue 'inner;
-                                            } else if mines > rows * cols / 2 {
-                                                println!("\nFaulty input. The amount of mines cannot exceed 50% of the number of total game tiles (rows*columns).")
-                                            }
-                                            game_cols = cols;
-                                            game_rows = rows;
-                                            game_mines = mines;
-                                            game_seed = Some(dialoguer::Input::new()
-                                                .with_prompt("\nPlease enter preferred game seed (press Enter for random)",)
+                        5 => {
+                            (82, 44, 1334)
+                        }
+                        6 => {
+                            (120, 50, 2520)
+                        }
+                        _ => {
+                            println!(
+                                "You need to choose one of the options. Please try again or press Q to exit."
+                            );
+                            continue;
+                        }
+                    };
+                    game_cols = cols;
+                    game_rows = rows;
+                    game_mines = mines;
+                    break;
+                } else {
+                    exit(0);
+                }
+            }
+            Err(_) => {
+                println!(
+                    "You need to choose one of the options. Please try again or press Q to exit."
+                );
+                continue;
+            }
+        }
+    }
+
+    loop {
+    match dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
+            .items(&["Random", "Seeded"])
+            .default(0)
+            .with_prompt("Do you want to play a random or seeded game?")
+            .interact_opt()
+        {
+            Ok(option) => {
+                if let Some(alt) = option {
+
+                    match alt{
+                        0 => {
+                            game_seed = None;
+                            break;
+                        },
+                        1 => {
+                            let random_seed = format!(
+                                "{}",
+                                rand::thread_rng()
+                                    .sample_iter(Alphanumeric)
+                                    .take(20)
+                                    .map(char::from)
+                                    .collect::<String>()
+                            );
+                            println!("WARNING: Due to the nature of seeded generation, the first click is not guaranteed to be safe. To still make it playable, the game makes sure that the top left corner is safe on a seeded game.");
+                            game_seed = Some(dialoguer::Input::new()
+                                                .with_prompt("Please enter game seed (press Enter for random)",)
                                                 .default(random_seed)
                                                 .show_default(false)
                                                 .interact()
                                                 .unwrap());
-                                            break 'outer;
-                                        }
-                                        _ => {
-                                            println!("\nFaulty input. Please make sure that you enter width, height and mines as integers.");
-                                            continue 'inner;
-                                        }
-                                    }
-                                }
-                                _ => {
-                                    println!("\nFaulty input format. Please try again.");
-                                    continue 'inner;
-                                }
-                            }
+                                                break;
                         },
                         _ => {
                             println!(
                                 "You need to choose one of the options. Please try again or press Q to exit."
                             );
-                            continue 'outer;
+                            continue;
                         }
                     }
-                    game_seed = None;
-                    break 'outer;
                 } else {
                     exit(0);
                 }

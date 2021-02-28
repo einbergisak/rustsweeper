@@ -87,12 +87,13 @@ impl GameContainer {
             (0, 0)
         };
 
-        let mut hasher = DefaultHasher::default();
+        let mut hasher = DefaultHasher::new();
         let mut token: u64;
         let mut current_number_of_mines: usize = 0;
         let (mut x_index, mut y_index) = (0, 0);
 
         // Uses the MAD-hashing technique to distribute the mines on the game field.
+        // TODO: seeding not really working
         'outer: loop {
             'inner: loop {
                 let mut tile = &mut self.tile_array[x_index][y_index];
@@ -105,10 +106,10 @@ impl GameContainer {
 
                 if (token.overflowing_mul(23).0 + 7) % 53 == 0
                     && !tile.is_a_mine
-                    && ((seed.is_some() && x_index > 2 && y_index > 2)
+                    && (seed.is_some() && x_index > 1 && y_index > 1
                         || (seed.is_none()
-                            && (x_index.wrapping_sub(clicked_tile_x)) > 1
-                            && (y_index.wrapping_sub(clicked_tile_y)) > 1))
+                            && !((x_index as isize - clicked_tile_x as isize).abs() < 2
+                                && (y_index as isize - clicked_tile_y as isize).abs() < 2)))
                 {
                     tile.is_a_mine = true;
                     current_number_of_mines += 1;
@@ -133,11 +134,6 @@ impl GameContainer {
             for y in 0..self.game_rows {
                 self.set_tile_number((x, y));
             }
-        }
-
-        // Reveals the upper left corner if playing a seeded game.
-        if seed.is_some() {
-            self.reveal_tile_at((0, 0));
         }
     }
 
