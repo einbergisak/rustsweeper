@@ -34,7 +34,7 @@ impl Default for Tile {
 
 /// Contains the data relevant to the game
 pub(crate) struct GameContainer {
-    pub(crate) tile_array: Box<TileArray>,
+    pub(crate) tile_array: TileArray,
     pub(crate) tiles_revealed: usize,
     pub(crate) game_rows: usize,
     pub(crate) game_cols: usize,
@@ -52,8 +52,7 @@ impl GameContainer {
         seed: Option<String>,
         scaled_tile_size: f32,
     ) -> GameContainer {
-        let tile_array: Box<TileArray> =
-            Box::new(vec![vec![Tile::default(); game_rows]; game_cols]);
+        let tile_array: TileArray = vec![vec![Tile::default(); game_rows]; game_cols];
 
         let img = Image::new(&mut ctx, "/spritesheet.png").expect("Image loading error");
         let mut gc = GameContainer {
@@ -108,8 +107,8 @@ impl GameContainer {
                     && !tile.is_a_mine
                     && ((seed.is_some() && x_index > 2 && y_index > 2)
                         || (seed.is_none()
-                            && (x_index.overflowing_sub(clicked_tile_x).0) > 1
-                            && (y_index.overflowing_sub(clicked_tile_y).0) > 1))
+                            && (x_index.wrapping_sub(clicked_tile_x)) > 1
+                            && (y_index.wrapping_sub(clicked_tile_y)) > 1))
                 {
                     tile.is_a_mine = true;
                     current_number_of_mines += 1;
@@ -207,18 +206,18 @@ impl GameContainer {
 
     /// Sets the number for each non-mine tile
     fn set_tile_number(&mut self, (tile_x, tile_y): (usize, usize)) {
-        if !self.tile_array[tile_x][tile_y].is_a_mine {
-            let mut acc: u8 = 0; // +1 for each mine surrounding the argument tile
-            let add_if_mine = |sself: &mut Self, (x, y): (usize, usize)| {
-                if sself.tile_array[x][y].is_a_mine {
-                    acc += 1;
+        if self.tile_array[tile_x][tile_y].is_a_mine {
+            let add_if_not_mine = |sself: &mut Self, (x, y): (usize, usize)| {
+                let mut tile = &mut sself.tile_array[x][y];
+                if !tile.is_a_mine {
+                    tile.number = if tile.number.is_none() {
+                        Some(1)
+                    } else {
+                        Some(tile.number.unwrap() + 1)
+                    }
                 }
             };
-            self.map_tile_and_surrounding((tile_x, tile_y), add_if_mine);
-            let mut tile: &mut Tile = &mut self.tile_array[tile_x][tile_y];
-            if acc != 0 {
-                tile.number = Some(acc);
-            }
+            self.map_tile_and_surrounding((tile_x, tile_y), add_if_not_mine);
         }
     }
 

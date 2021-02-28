@@ -1,7 +1,8 @@
-use ggez::nalgebra::Vector2;
+use ggez::{event, nalgebra::Vector2};
 use ggez::{
     event::EventHandler,
     graphics::{self, Color, DrawParam, Rect},
+    input::mouse,
     nalgebra::Point2,
 };
 
@@ -12,7 +13,7 @@ const TILE_IMAGE_FRACTION: f32 = DEFAULT_TILE_SIZE / SPRITESHEET_WIDTH;
 impl EventHandler for GameContainer {
     fn mouse_button_down_event(
         &mut self,
-        _ctx: &mut ggez::Context,
+        ctx: &mut ggez::Context,
         button: ggez::event::MouseButton,
         x: f32,
         y: f32,
@@ -20,16 +21,27 @@ impl EventHandler for GameContainer {
         let tile_x = (x / self.scaled_tile_size).floor() as usize;
         let tile_y = (y / self.scaled_tile_size).floor() as usize;
         match button {
-            ggez::event::MouseButton::Left => {
+            event::MouseButton::Left => {
                 if self.tiles_revealed == 0 {
                     self.distribute_mines(Some((tile_x, tile_y)), None)
-                } 
-                // Reveal
-                self.reveal_tile_at((tile_x, tile_y));
+                }
+
+                if mouse::button_pressed(ctx, event::MouseButton::Right) {
+                    // Chord if both the left and the right mouse buttons are pressed.
+                    self.chord_at((tile_x, tile_y))
+                } else {
+                    // Reveal
+                    self.reveal_tile_at((tile_x, tile_y));
+                }
             }
             ggez::event::MouseButton::Right => {
-                // Flag
-                self.toggle_flag_at((tile_x, tile_y));
+                if mouse::button_pressed(ctx, event::MouseButton::Left) {
+                    // Chord if both the left and the right mouse buttons are pressed.
+                    self.chord_at((tile_x, tile_y))
+                } else {
+                    // Flag
+                    self.toggle_flag_at((tile_x, tile_y));
+                }
             }
             ggez::event::MouseButton::Middle => {
                 // Chord
@@ -39,13 +51,13 @@ impl EventHandler for GameContainer {
         }
     }
 
-    fn update(&mut self, _ctx: &mut ggez::Context) -> ggez::GameResult {
+    fn update(&mut self, ctx: &mut ggez::Context) -> ggez::GameResult {
+        while ggez::timer::check_update_time(ctx, 240) {}
         Ok(())
     }
 
+    // TODO: Rita endast upp de som det har blivit ändring på.
     fn draw(&mut self, ctx: &mut ggez::Context) -> ggez::GameResult {
-        graphics::clear(ctx, Color::from_rgb(0, 0, 0));
-
         let mut sprite_batch = self.sprite_batch.clone();
         let tile_array = &*self.tile_array;
         for (x, vec) in tile_array.into_iter().enumerate() {
@@ -94,7 +106,6 @@ impl EventHandler for GameContainer {
         // )
         // .unwrap();
 
-        // todo std::thread::yield_now();
         graphics::present(ctx)
     }
 }
