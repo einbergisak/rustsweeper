@@ -173,7 +173,7 @@ fn main() {
         WindowMode::default()
             .dimensions(
                 game_cols as f32 * scaled_tile_size,
-                game_rows as f32 * scaled_tile_size,
+                game_rows as f32 * scaled_tile_size+15.0,
             )
             .resizable(false),
     );

@@ -1,5 +1,5 @@
 use core::num;
-use std::collections::hash_map::DefaultHasher;
+use std::{collections::hash_map::DefaultHasher, time::{Instant, SystemTime}};
 use std::hash::{Hash, Hasher};
 
 use ggez::{
@@ -37,12 +37,15 @@ impl Default for Tile {
 pub(crate) struct GameContainer {
     pub(crate) tile_array: TileArray,
     pub(crate) tiles_revealed: usize,
+    pub(crate) tiles_flagged: isize,
     pub(crate) game_rows: usize,
     pub(crate) game_cols: usize,
-    game_mines: usize,
+    pub(crate) game_seed: Option<String>,
+    pub(crate) game_mines: usize,
     pub(crate) sprite_batch: SpriteBatch,
     pub(crate) scaled_tile_size: f32,
-    pub(crate) game_seed: Option<String>
+    pub(crate) start_time: Option<SystemTime>
+
 }
 impl GameContainer {
     /// Creates a new game with the provided settings and seed.
@@ -60,12 +63,15 @@ impl GameContainer {
         let gc = GameContainer {
             tile_array,
             tiles_revealed: 0,
+            tiles_flagged: 0,
             game_rows,
             game_cols,
             game_mines,
+            game_seed,
             sprite_batch: SpriteBatch::new(img),
             scaled_tile_size,
-            game_seed
+            start_time: None,
+
         };
 
         gc
@@ -133,9 +139,14 @@ impl GameContainer {
                 self.set_tile_number((x, y));
             }
         }
+
+
+        self.start_time = Some(std::time::SystemTime::now());
     }
 
 
+    // TODO: https://magnushoff.com/articles/minesweeper/
+   
 
     /// Reveals the tile at the given coordinates.
     pub(crate) fn reveal_tile_at(&mut self, (tile_x, tile_y): (usize, usize)) {
@@ -153,9 +164,15 @@ impl GameContainer {
 
     /// Toggles if the tile is flagged or not
     pub(crate) fn toggle_flag_at(&mut self, (tile_x, tile_y): (usize, usize)) {
-        if !self.tile_array[tile_x][tile_y].is_revealed {
-            // Toggles with bitwise XOR
-            self.tile_array[tile_x][tile_y].is_flagged ^= true;
+        let tile = &mut self.tile_array[tile_x][tile_y];
+        if !tile.is_revealed {
+            if tile.is_flagged{
+                tile.is_flagged = false;
+                self.tiles_flagged -= 1;
+            }else{
+                tile.is_flagged = true;
+                self.tiles_flagged += 1;
+            }
         }
     }
 

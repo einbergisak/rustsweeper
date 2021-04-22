@@ -1,4 +1,6 @@
-use ggez::{event, nalgebra::Vector2};
+use std::time::Duration;
+
+use ggez::{event, graphics::Text, nalgebra::Vector2};
 use ggez::{
     event::EventHandler,
     graphics::{self, DrawParam, Rect},
@@ -58,6 +60,7 @@ impl EventHandler for GameContainer {
 
     // TODO: Rita endast upp de som det har blivit ändring på.
     fn draw(&mut self, ctx: &mut ggez::Context) -> ggez::GameResult {
+        graphics::clear(ctx, graphics::Color::from_rgb(50, 50, 50));
         let mut sprite_batch = self.sprite_batch.clone();
         let tile_array = &*self.tile_array;
         for (x, vec) in tile_array.into_iter().enumerate() {
@@ -96,6 +99,8 @@ impl EventHandler for GameContainer {
 
         graphics::draw(ctx, &sprite_batch, (Point2::<f32>::new(0.0, 0.0),))
             .expect("Something went wrong rendering the game.");
+
+
         // let a = ggez::graphics::Mesh::new_circle(
         //     ctx,
         //     DrawMode::Fill(FillOptions::default()),
@@ -105,6 +110,22 @@ impl EventHandler for GameContainer {
         //     graphics::WHITE,
         // )
         // .unwrap();
+
+
+            let current_time = self.start_time.unwrap_or(std::time::SystemTime::now()).elapsed().unwrap_or(std::time::Duration::from_secs(0));
+            let mut elapsed_time = Text::new(format!("Elapsed time: {}s", current_time.as_secs().to_string()));
+            elapsed_time.set_font(
+                graphics::Font::default(),
+                graphics::Scale { x: 15.0, y: 15.0 },
+            );
+            graphics::draw(ctx, &elapsed_time, (Point2::<f32>::new(0.0, self.game_rows as f32*self.scaled_tile_size),))?;
+
+        let mut remaining_mines = Text::new(format!("Remaining mines: {}", self.game_mines as isize -self.tiles_flagged));
+        remaining_mines.set_font(
+            graphics::Font::default(),
+            graphics::Scale { x: 15.0, y: 15.0 },
+        );
+        graphics::draw(ctx, &remaining_mines, (Point2::<f32>::new(150.0, self.game_rows as f32*self.scaled_tile_size),))?;
 
         graphics::present(ctx)
     }
