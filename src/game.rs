@@ -1,3 +1,4 @@
+use core::num;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
@@ -41,6 +42,7 @@ pub(crate) struct GameContainer {
     game_mines: usize,
     pub(crate) sprite_batch: SpriteBatch,
     pub(crate) scaled_tile_size: f32,
+    pub(crate) game_seed: Option<String>
 }
 impl GameContainer {
     /// Creates a new game with the provided settings and seed.
@@ -49,13 +51,13 @@ impl GameContainer {
         game_rows: usize,
         game_cols: usize,
         game_mines: usize,
-        seed: Option<String>,
+        game_seed: Option<String>,
         scaled_tile_size: f32,
     ) -> GameContainer {
-        let tile_array: TileArray = vec![vec![Tile::default(); game_rows]; game_cols];
+        let tile_array = vec![vec![Tile::default(); game_rows]; game_cols];
 
         let img = Image::new(&mut ctx, "/spritesheet.png").expect("Image loading error");
-        let mut gc = GameContainer {
+        let gc = GameContainer {
             tile_array,
             tiles_revealed: 0,
             game_rows,
@@ -63,11 +65,8 @@ impl GameContainer {
             game_mines,
             sprite_batch: SpriteBatch::new(img),
             scaled_tile_size,
+            game_seed
         };
-
-        if seed.is_some() {
-            gc.distribute_mines(None, seed);
-        }
 
         gc
     }
@@ -78,8 +77,7 @@ impl GameContainer {
     /// because otherwise seeded gameplay would be impossible (since you'd be able to click on a mine on the initial click).
     pub(crate) fn distribute_mines(
         &mut self,
-        tile_coords: Option<(usize, usize)>,
-        seed: Option<String>,
+        tile_coords: Option<(usize, usize)>
     ) {
         let (clicked_tile_x, clicked_tile_y) = if let Some(tuple) = tile_coords {
             tuple
@@ -97,7 +95,7 @@ impl GameContainer {
         'outer: loop {
             'inner: loop {
                 let mut tile = &mut self.tile_array[x_index][y_index];
-                if let Some(ref s) = seed {
+                if let Some(ref s) = self.game_seed {
                     s.hash(&mut hasher);
                     token = hasher.finish();
                 } else {
@@ -106,8 +104,8 @@ impl GameContainer {
 
                 if (token.overflowing_mul(23).0 + 7) % 53 == 0
                     && !tile.is_a_mine
-                    && (seed.is_some() && x_index > 1 && y_index > 1
-                        || (seed.is_none()
+                    && (self.game_seed.is_some() && x_index > 1 && y_index > 1
+                        || (self.game_seed.is_none()
                             && !((x_index as isize - clicked_tile_x as isize).abs() < 2
                                 && (y_index as isize - clicked_tile_y as isize).abs() < 2)))
                 {
@@ -136,6 +134,8 @@ impl GameContainer {
             }
         }
     }
+
+
 
     /// Reveals the tile at the given coordinates.
     pub(crate) fn reveal_tile_at(&mut self, (tile_x, tile_y): (usize, usize)) {
@@ -171,10 +171,11 @@ impl GameContainer {
                     }
                 },
             );
+
             if tile.number == Some(acc) {
                 self.map_tile_and_surrounding(
                     (tile_x, tile_y),
-                    |sself: &mut Self, (x, y): (usize, usize)| sself.reveal_tile_at((x, y)),
+                    |sself: &mut Self, (x, y): (usize, usize)| sself.reveal_tile_at((x, y)), //TODO: Bör kunna ersättas med GameContainer::reveal_tile_at ist för anonym funktion
                 );
             }
         }

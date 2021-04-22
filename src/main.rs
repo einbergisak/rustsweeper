@@ -7,13 +7,13 @@ extern crate rand;
 mod event_handler;
 mod game;
 
+use colored::*;
 use ggez::{
     conf::WindowMode,
     event,
     graphics::{self},
 };
 use rand::{distributions::Alphanumeric, Rng};
-use colored::*;
 
 const DEFAULT_TILE_SIZE: f32 = 40.0;
 const SPRITESHEET_WIDTH: f32 = 440.0;
@@ -22,13 +22,37 @@ fn main() {
     let (game_cols, game_rows, game_mines): (usize, usize, usize);
     let game_seed: Option<String>;
     let default_settings = [
-        "Novice [9x9] (81 tiles, 12% mines)".color(Color::TrueColor{ r: 20, g: 220, b: 0}),
-        "Versed [16x16] (256 tiles, 16% mines)".color(Color::TrueColor{ r: 147, g: 230, b: 0}),
-        "Expert [30x16] (480 tiles, 21% mines)".color(Color::TrueColor{ r: 212, g: 230, b: 0}),
-        "Master [40x24] (960 tiles, 26% mines)".color(Color::TrueColor{ r: 255, g: 200, b: 0}),
-        "Savant [60x35] (2160 tiles, 32% mines)".color(Color::TrueColor{ r: 255, g: 148, b: 0}),
-        "Legend [82x44] (3608 tiles, 37% mines)".color(Color::TrueColor{ r: 255, g: 88, b: 0}),
-        "Unreal [120x50] (6000 tiles, 42% mines)".color(Color::TrueColor{ r: 174, g: 0, b: 0}),
+        "Novice [9x9] (81 tiles, 12% mines)".color(Color::TrueColor {
+            r: 20,
+            g: 220,
+            b: 0,
+        }),
+        "Versed [16x16] (256 tiles, 16% mines)".color(Color::TrueColor {
+            r: 147,
+            g: 230,
+            b: 0,
+        }),
+        "Expert [30x16] (480 tiles, 21% mines)".color(Color::TrueColor {
+            r: 212,
+            g: 230,
+            b: 0,
+        }),
+        "Master [40x24] (960 tiles, 26% mines)".color(Color::TrueColor {
+            r: 255,
+            g: 200,
+            b: 0,
+        }),
+        "Savant [60x35] (2160 tiles, 32% mines)".color(Color::TrueColor {
+            r: 255,
+            g: 148,
+            b: 0,
+        }),
+        "Legend [82x44] (3608 tiles, 37% mines)".color(Color::TrueColor {
+            r: 255,
+            g: 88,
+            b: 0,
+        }),
+        "Unreal [120x50] (6000 tiles, 42% mines)".color(Color::TrueColor { r: 174, g: 0, b: 0 }),
     ];
 
     loop {
@@ -87,7 +111,7 @@ fn main() {
     }
 
     loop {
-    match dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
+        match dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
             .items(&["Random", "Seeded"])
             .default(0)
             .with_prompt("Do you want to play a random or seeded game?")
@@ -95,12 +119,11 @@ fn main() {
         {
             Ok(option) => {
                 if let Some(alt) = option {
-
-                    match alt{
+                    match alt {
                         0 => {
                             game_seed = None;
                             break;
-                        },
+                        }
                         1 => {
                             let random_seed = format!(
                                 "{}",
@@ -111,14 +134,16 @@ fn main() {
                                     .collect::<String>()
                             );
                             println!("WARNING: Due to the nature of seeded generation, the first click is not guaranteed to be safe. To still make it playable, the game makes sure that the top left corner is safe on a seeded game.");
-                            game_seed = Some(dialoguer::Input::new()
-                                                .with_prompt("Please enter game seed (press Enter for random)",)
-                                                .default(random_seed)
-                                                .show_default(false)
-                                                .interact()
-                                                .unwrap());
-                                                break;
-                        },
+                            game_seed = Some(
+                                dialoguer::Input::new()
+                                    .with_prompt("Please enter game seed (press Enter for random)")
+                                    .default(random_seed)
+                                    .show_default(false)
+                                    .interact()
+                                    .unwrap(),
+                            );
+                            break;
+                        }
                         _ => {
                             println!(
                                 "You need to choose one of the options. Please try again or press Q to exit."

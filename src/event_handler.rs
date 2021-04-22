@@ -22,8 +22,8 @@ impl EventHandler for GameContainer {
         let tile_y = (y / self.scaled_tile_size).floor() as usize;
         match button {
             event::MouseButton::Left => {
-                if self.tiles_revealed == 0 {
-                    self.distribute_mines(Some((tile_x, tile_y)), None)
+                if self.tiles_revealed == 0{
+                    self.distribute_mines(Some((tile_x, tile_y)))
                 }
 
                 if mouse::button_pressed(ctx, event::MouseButton::Right) {
@@ -52,7 +52,7 @@ impl EventHandler for GameContainer {
     }
 
     fn update(&mut self, ctx: &mut ggez::Context) -> ggez::GameResult {
-        while ggez::timer::check_update_time(ctx, 240) {}
+        while ggez::timer::check_update_time(ctx, 60) {}
         Ok(())
     }
 
